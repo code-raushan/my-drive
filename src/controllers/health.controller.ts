@@ -4,7 +4,6 @@ import config from '../config';
 //@ts-ignore
 import { default as pjson } from '../../package.json';
 import { NotFoundError } from '../errors/not-found.error';
-import redisClient from '../services/cache';
 
 const instanceRandomID = Math.random().toString();
 
@@ -27,10 +26,10 @@ export const helloWorld = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const health = async (req: Request, res: Response, next: NextFunction) => {
-  const key = 'healthCheck';
-  await redisClient.setEx(key, 100, 'ok');
-  // const cached = await redisClient.get(key);
-  await redisClient.del(key);
+  // const key = 'healthCheck';
+  // await redisClient.setEx(key, 100, 'ok');
+  // // const cached = await redisClient.get(key);
+  // await redisClient.del(key);
   next({
     // redis: cached,
     status: 'working'
