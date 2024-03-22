@@ -29,6 +29,8 @@ const config = {
   AWS_COGNITO_CLIENT_ID: process.env.AWS_COGNITO_CLIENT_ID! as string,
   AWS_REGION: process.env.AWS_REGION! as string,
   TEMPORARY_COGNITO_USER_PASSSWORD: process.env.TEMPORARY_COGNITO_USER_PASSSWORD! as string,
+
+  COGNITO_TOKEN_SIGNING_URL: process.env.COGNITO_TOKEN_SIGNING_URL! as string,
 };
 
 export default config;
