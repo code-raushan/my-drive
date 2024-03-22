@@ -14,7 +14,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const { header } = jwt.decode(token, { complete: true }) as any;
+    const { header } = jwt.decode(token, { complete: true }) as jwt.Jwt;
     const key = client.getSigningKey(header.kid);
     const signingKey = (await key).getPublicKey();
     const decoded: jwt.JwtPayload = jwt.verify(token, signingKey, { algorithms: ['RS256'] }) as jwt.JwtPayload;
