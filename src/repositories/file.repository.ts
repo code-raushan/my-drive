@@ -20,6 +20,7 @@ export class FileRepository {
             fileName,
             ownerId,
             s3Key,
+            size: size ? size : null,
             createdAt: new Date(),
             updatedAt: new Date(),
         }).returningAll().executeTakeFirst();
