@@ -11,7 +11,6 @@ generator kysely {
   enumFileName = "enums.ts"
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -23,4 +22,17 @@ model User {
   lastName String?
   email String? @unique
   phone String @unique
+  files File[]
 }
+
+model File {
+  id String @id @default(uuid())
+  fileName String
+  s3Key String
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id])
+  size BigInt?
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+}
+
