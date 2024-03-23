@@ -19,20 +19,17 @@ class FileService {
         const fileId = Date.now();
         const p = file.originalname.split('.');
         const ext = p[p.length - 1];
-        const Key = `${file.originalname.replace('.', '') + '_' + fileId + '.' + ext}`;
-        console.log({ Key })
+        const Key = `${userId}/${file.originalname.replace('.', '') + '_' + fileId + '.' + ext}`;
 
         try {
             const uploadParams: CreateMultipartUploadCommandInput = {
-                Bucket: 'react-deployer',
+                Bucket: 's3-bucket',
                 Key,
                 ContentType: file.mimetype
             };
 
             const createUploadCommand = new CreateMultipartUploadCommand(uploadParams);
             const { UploadId } = await s3Client.send(createUploadCommand);
-
-            console.log({ UploadId })
 
 
             // upload chunks in parallel
@@ -47,7 +44,7 @@ class FileService {
                 const chunk = fs.createReadStream(file.path, { start, end });
 
                 const uploadChunkParams: UploadPartCommandInput = {
-                    Bucket: 'react-deployer',
+                    Bucket: 's3-bucket',
                     Key,
                     UploadId,
                     PartNumber: i + 1,
@@ -60,8 +57,6 @@ class FileService {
 
             const partUploadResponses = await Promise.all(partUploadPromises);
 
-            console.log({ partUploadResponses })
-
             const completedParts = [];
 
             for (let i = 0; i < partUploadResponses.length; i++) {
@@ -71,10 +66,8 @@ class FileService {
                 })
             };
 
-            console.log({ completedParts })
-
             const completeMultipartUploadsParams: CompleteMultipartUploadCommandInput = {
-                Bucket: 'react-deployer',
+                Bucket: 's3-bucket',
                 Key,
                 UploadId,
                 MultipartUpload: {

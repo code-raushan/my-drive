@@ -15,10 +15,6 @@ class AWSUtils {
     async s3Client() {
         const client = new S3Client({
             region: this.AWS_REGION,
-            maxAttempts: 3,
-            retryMode: 'standard',
-            // timeout: 300000 ,
-
             credentials: {
                 accessKeyId: this.S3_ACCESS_KEY_ID,
                 secretAccessKey: this.S3_SECRET_ACCESS_KEY
