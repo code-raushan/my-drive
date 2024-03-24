@@ -1,4 +1,4 @@
-import { PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, DeleteObjectCommandInput, PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
 import config from '../config';
@@ -102,8 +102,6 @@ class FileService {
     async getFileInfo(params: { fileId: string, ownerId: string }) {
         const { fileId, ownerId } = params;
 
-        console.log({ fileId, ownerId })
-
         const file = await this._fileRepository.getFile({ fileId, ownerId });
         if (!file) throw new BadRequestError('File not found');
 
@@ -115,6 +113,37 @@ class FileService {
         if (!files) throw new BadRequestError('Files not found');
 
         return files;
+    }
+
+    async deleteFile(params: { ownerId: string, fileId: string }) {
+        const { fileId, ownerId } = params;
+
+        // delete from s3 bucket
+        const { s3Key } = await this._fileRepository.getS3Key(fileId) || { s3Key: '' };
+        if (!s3Key) throw new BadRequestError('Failed to get storage key');
+
+        try {
+            const deleteObjectParams: DeleteObjectCommandInput = {
+                Bucket: this._Bucket,
+                Key: s3Key,
+            }
+
+            const deleteObjectCommand = new DeleteObjectCommand(deleteObjectParams);
+            const s3Client = await awsUtil.s3Client();
+
+            const { $metadata } = await s3Client.send(deleteObjectCommand);
+            if ($metadata.httpStatusCode === 204) logger.info(`File deleted successfully - ${s3Key}`);
+            else logger.error('Failed to delete file');
+
+        } catch (error) {
+            logger.error(error);
+            throw new BadRequestError(`failed to delete file from s3 bucket - ${s3Key}`)
+        }
+        // delete record from database
+        const deletedFile = await this._fileRepository.deleteFile({ fileId, ownerId });
+        if (!deletedFile) throw new BadRequestError('Failed to delete the file');
+
+        return deletedFile;
     }
 }
 

@@ -26,3 +26,12 @@ export const listAllFiles = async (req: Request, res: Response, next: NextFuncti
 
     next(response);
 }
+
+export const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = '97e3c12a-e0f0-4195-b0bc-cc6c3e9ab632' || req.user.id;
+    const fileId = req.params.fileId;
+
+    const response = await fileService.deleteFile({ ownerId: userId, fileId });
+
+    next(response);
+}

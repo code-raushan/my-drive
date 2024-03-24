@@ -49,4 +49,14 @@ export class FileRepository {
     async getAllFiles(ownerId: string) {
         return this._db.selectFrom('File').selectAll().where("File.ownerId", "=", ownerId).execute();
     }
+
+    async getS3Key(fileId: string) {
+        return this._db.selectFrom('File').select('File.s3Key').where('File.id', '=', fileId).executeTakeFirst();
+    }
+
+    async deleteFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        return this._db.deleteFrom('File').where(eb => eb.and({ id: fileId, ownerId })).returningAll().executeTakeFirst();
+    }
 }
