@@ -1,6 +1,7 @@
 import { PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
+import config from '../config';
 import { FileRepository } from "../repositories/file.repository";
 import awsUtil from "../utils/aws.util";
 import logger from '../utils/logger';
@@ -10,7 +11,10 @@ export interface IUploadFileParams {
 }
 
 class FileService {
-    constructor(private readonly _fileRepository: FileRepository) { }
+    private _Bucket: string;
+    constructor(private readonly _fileRepository: FileRepository) {
+        this._Bucket = config.S3_UPLOAD_BUCKET;
+    }
 
     async uploadFile(params: IUploadFileParams) {
         const s3Client = await awsUtil.s3Client();
@@ -26,7 +30,7 @@ class FileService {
                 const upload = new Upload({
                     client: s3Client,
                     params: {
-                        Bucket: 'react-deployer',
+                        Bucket: this._Bucket,
                         Key,
                         Body: fs.createReadStream(file.path),
                         ContentType: file.mimetype
@@ -60,7 +64,7 @@ class FileService {
             try {
                 logger.info('Using PutObjectCommand to upload file')
                 const uploadCommandParams: PutObjectCommandInput = {
-                    Bucket: 'react-deployer',
+                    Bucket: this._Bucket,
                     Key,
                     Body: fs.createReadStream(file.path),
                     ContentType: file.mimetype
@@ -83,8 +87,6 @@ class FileService {
             }
 
         }
-
-
 
         const fileInfo = await this._fileRepository.createFile({
             fileName: file.originalname,
