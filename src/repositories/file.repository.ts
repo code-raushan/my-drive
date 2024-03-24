@@ -25,4 +25,28 @@ export class FileRepository {
             updatedAt: new Date(),
         }).returningAll().executeTakeFirst();
     }
+
+    async getFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        console.log('in repository logic');
+        console.log({ fileId, ownerId })
+
+        // return this._db.selectFrom('File').selectAll().where((eb) =>
+        //     eb.and([
+        //         eb('File.id', '=', String(fileId)),
+        //         eb('File.ownerId', '=', String(ownerId))
+        //     ])
+        // ).executeTakeFirst();
+
+        return this._db
+            .selectFrom('File')
+            .selectAll()
+            .where((eb) => eb.and({ id: fileId, ownerId }))
+            .executeTakeFirst();
+    }
+
+    async getAllFiles(ownerId: string) {
+        return this._db.selectFrom('File').selectAll().where("File.ownerId", "=", ownerId).execute();
+    }
 }

@@ -11,6 +11,6 @@ v1Router.get('/', asyncHandler(helloWorld));
 v1Router.get('/health', isLoggedIn, asyncHandler(health));
 v1Router.post('/send-otp', asyncHandler(sendOTP));
 v1Router.post('/verify-otp', asyncHandler(verifyOTP));
-v1Router.use('/upload', fileRouter);
+v1Router.use('/files', fileRouter);
 
 export default v1Router;

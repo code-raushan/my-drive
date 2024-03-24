@@ -2,6 +2,7 @@ import { PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
 import config from '../config';
+import { BadRequestError } from '../errors/bad-request.error';
 import { FileRepository } from "../repositories/file.repository";
 import awsUtil from "../utils/aws.util";
 import logger from '../utils/logger';
@@ -96,6 +97,24 @@ class FileService {
         });
 
         return fileInfo;
+    }
+
+    async getFileInfo(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        console.log({ fileId, ownerId })
+
+        const file = await this._fileRepository.getFile({ fileId, ownerId });
+        if (!file) throw new BadRequestError('File not found');
+
+        return file;
+    }
+
+    async listAllFiles(ownerId: string) {
+        const files = await this._fileRepository.getAllFiles(ownerId);
+        if (!files) throw new BadRequestError('Files not found');
+
+        return files;
     }
 }
 
