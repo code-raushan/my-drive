@@ -20,7 +20,7 @@ class FileService {
         const ext = p[p.length - 1];
         const Key = `__outputs/${userId}/${file.originalname.replace('.', '') + '_' + fileId + '.' + ext}`;
 
-        if (file.size > 100 * 1024 * 1024) {
+        if (file.size > 10 * 1024 * 1024) {
             try {
                 logger.info('Using S3-lib-storage to upload the file')
                 const upload = new Upload({
@@ -37,6 +37,11 @@ class FileService {
                 });
 
                 logger.info('Starting to upload...');
+
+                upload.on('httpUploadProgress', (progress) => {
+                    const percentage = Math.round((progress.loaded! / progress.total!) * 100);
+                    logger.info(`Upload progress: ${percentage}%`);
+                });
 
                 const { $metadata } = await upload.done();
                 if ($metadata.httpStatusCode === 200) {
