@@ -1,95 +1,86 @@
-import { CompleteMultipartUploadCommandInput, CreateMultipartUploadCommand, CreateMultipartUploadCommandInput, ListMultipartUploadsCommand, UploadPartCommand, UploadPartCommandInput } from '@aws-sdk/client-s3';
+import { PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
-import { BadRequestError } from '../errors/bad-request.error';
 import { FileRepository } from "../repositories/file.repository";
 import awsUtil from "../utils/aws.util";
 import logger from '../utils/logger';
-
 export interface IUploadFileParams {
     userId: string,
     file: Express.Multer.File
 }
+
 class FileService {
     constructor(private readonly _fileRepository: FileRepository) { }
 
     async uploadFile(params: IUploadFileParams) {
-        // code to upload file to s3
         const s3Client = await awsUtil.s3Client();
         const { file, userId } = params;
         const fileId = Date.now();
         const p = file.originalname.split('.');
         const ext = p[p.length - 1];
-        const Key = `${file.originalname.replace('.', '') + '_' + fileId + '.' + ext}`;
-        console.log({ Key })
+        const Key = `__outputs/${userId}/${file.originalname.replace('.', '') + '_' + fileId + '.' + ext}`;
 
-        try {
-            const uploadParams: CreateMultipartUploadCommandInput = {
-                Bucket: 'react-deployer',
-                Key,
-                ContentType: file.mimetype
-            };
+        if (file.size > 100 * 1024 * 1024) {
+            try {
+                logger.info('Using S3-lib-storage to upload the file')
+                const upload = new Upload({
+                    client: s3Client,
+                    params: {
+                        Bucket: 'react-deployer',
+                        Key,
+                        Body: fs.createReadStream(file.path),
+                        ContentType: file.mimetype
+                    },
+                    tags: [],
+                    queueSize: 4,
+                    partSize: 5 * 1024 * 1024
+                });
 
-            const createUploadCommand = new CreateMultipartUploadCommand(uploadParams);
-            const { UploadId } = await s3Client.send(createUploadCommand);
+                logger.info('Starting to upload...');
 
-            console.log({ UploadId })
+                const { $metadata } = await upload.done();
+                if ($metadata.httpStatusCode === 200) {
+                    logger.info(`File uploaded successfully - ${file.originalname}`);
+                } else {
+                    logger.error('Upload not successful')
+                }
 
-
-            // upload chunks in parallel
-            const partSize = 5 * 1024 * 1024;
-            const numParts = Math.ceil(file.size / partSize);
-            const partUploadPromises = [];
-
-            for (let i = 0; i < numParts; i++) {
-                const start = i * partSize;
-                const end = Math.min(start + partSize, file.size);
-
-                const chunk = fs.createReadStream(file.path, { start, end });
-
-                const uploadChunkParams: UploadPartCommandInput = {
+            } catch (error) {
+                logger.error(error);
+                throw new Error('Failed to upload file');
+            } finally {
+                fs.unlinkSync(file.path)
+            }
+        } else {
+            try {
+                logger.info('Using PutObjectCommand to upload file')
+                const uploadCommandParams: PutObjectCommandInput = {
                     Bucket: 'react-deployer',
                     Key,
-                    UploadId,
-                    PartNumber: i + 1,
-                    Body: chunk,
+                    Body: fs.createReadStream(file.path),
+                    ContentType: file.mimetype
                 };
 
-                const uploadChunkCommand = new UploadPartCommand(uploadChunkParams);
-                partUploadPromises.push(s3Client.send(uploadChunkCommand));
-            };
+                logger.info('Starting to upload...');
 
-            const partUploadResponses = await Promise.all(partUploadPromises);
+                const { $metadata } = await s3Client.send(new PutObjectCommand(uploadCommandParams));
 
-            console.log({ partUploadResponses })
-
-            const completedParts = [];
-
-            for (let i = 0; i < partUploadResponses.length; i++) {
-                completedParts.push({
-                    PartNumber: i + 1,
-                    ETag: partUploadResponses[i].ETag
-                })
-            };
-
-            console.log({ completedParts })
-
-            const completeMultipartUploadsParams: CompleteMultipartUploadCommandInput = {
-                Bucket: 'react-deployer',
-                Key,
-                UploadId,
-                MultipartUpload: {
-                    Parts: completedParts
+                if ($metadata.httpStatusCode === 200) {
+                    logger.info(`File uploaded successfully - ${file.originalname}`);
+                } else {
+                    logger.error('Upload not successful');
                 }
-            };
+            } catch (error) {
+                logger.error(error);
+                throw new Error(`failed to upload file - ${file.originalname}`);
+            } finally {
+                fs.unlinkSync(file.path)
+            }
 
-            const completeMultipartUploadsCommand = new ListMultipartUploadsCommand(completeMultipartUploadsParams);
-            await s3Client.send(completeMultipartUploadsCommand);
-        } catch (error) {
-            logger.error(error);
-            throw new BadRequestError('Failed to upload file')
         }
 
-        // code to save uploaded file information in DB
+
+
         const fileInfo = await this._fileRepository.createFile({
             fileName: file.originalname,
             ownerId: userId,
