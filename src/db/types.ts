@@ -7,11 +7,20 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export type File = {
     id: string;
     fileName: string;
+    folderId: string | null;
     s3Key: string;
     ownerId: string;
     size: string | null;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+};
+export type Folder = {
+    id: string;
+    folderName: string;
+    parentFolderId: string | null;
+    ownerId: string;
+    createdAt: Timestamp;
+    updateAt: Timestamp;
 };
 export type User = {
     id: string;
@@ -22,5 +31,6 @@ export type User = {
 };
 export type DB = {
     File: File;
+    Folder: Folder;
     User: User;
 };

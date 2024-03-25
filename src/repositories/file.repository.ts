@@ -15,15 +15,19 @@ export class FileRepository {
     async createFile(params: ICreateFileParams) {
         const { fileName, ownerId, s3Key, size } = params;
 
-        return this._db.insertInto('File').values({
-            id: uuid(),
-            fileName,
-            ownerId,
-            s3Key,
-            size: size ? size : null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        }).returningAll().executeTakeFirst();
+        return this._db
+            .insertInto('File')
+            .values({
+                id: uuid(),
+                fileName,
+                ownerId,
+                s3Key,
+                size: size ? size : null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            })
+            .returningAll()
+            .executeTakeFirst();
     }
 
     async getFile(params: { fileId: string, ownerId: string }) {

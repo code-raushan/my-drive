@@ -23,11 +23,27 @@ model User {
   email String? @unique
   phone String @unique
   files File[]
+  folders Folder[]
+}
+
+model Folder {
+  id String @id
+  folderName String
+  parentFolder    Folder?  @relation("FolderToSubfolders", fields: [parentFolderId], references: [id])
+  parentFolderId  String?
+  subfolders Folder[] @relation("FolderToSubfolders")
+  files File[]
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId String
+  createdAt DateTime
+  updateAt DateTime
 }
 
 model File {
   id String @id @default(uuid())
   fileName String
+  folder Folder? @relation(fields: [folderId], references: [id])
+  folderId String?
   s3Key String
   ownerId String
   owner User @relation(fields: [ownerId], references: [id])
