@@ -19,14 +19,14 @@ class FolderRepository {
             .executeTakeFirst();
     }
 
-    async listFolderItems(params: { ownerId: string, folderId: string }) {
+    async listSubFolders(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 
         return this._db
             .selectFrom('Folder')
             .selectAll()
-            .where((eb) => eb.and({ id: folderId, ownerId }))
-            .execute();
+            .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId }))
+            .execute()
     }
 
     async listAllFolders(ownerId: string) {
