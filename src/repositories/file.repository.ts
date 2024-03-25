@@ -2,10 +2,11 @@ import { v4 as uuid } from 'uuid';
 import { db } from "../db";
 
 export interface ICreateFileParams {
-    fileName: string;
-    s3Key: string;
-    ownerId: string;
-    size?: string;
+    fileName: string,
+    s3Key: string,
+    ownerId: string,
+    folderId?: string,
+    size?: string,
 }
 
 
@@ -13,7 +14,7 @@ export class FileRepository {
     private _db = db;
 
     async createFile(params: ICreateFileParams) {
-        const { fileName, ownerId, s3Key, size } = params;
+        const { fileName, ownerId, s3Key, size, folderId } = params;
 
         return this._db
             .insertInto('File')
@@ -22,6 +23,7 @@ export class FileRepository {
                 fileName,
                 ownerId,
                 s3Key,
+                folderId: folderId ? folderId : null,
                 size: size ? size : null,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -51,16 +53,38 @@ export class FileRepository {
     }
 
     async getAllFiles(ownerId: string) {
-        return this._db.selectFrom('File').selectAll().where("File.ownerId", "=", ownerId).execute();
+        return this._db
+            .selectFrom('File')
+            .selectAll()
+            .where("File.ownerId", "=", ownerId)
+            .execute();
+    }
+
+    async getFilesOfFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        return this._db
+            .selectFrom('File')
+            .selectAll()
+            .where((eb) => eb.and({ ownerId, folderId }))
+            .execute();
     }
 
     async getS3Key(fileId: string) {
-        return this._db.selectFrom('File').select('File.s3Key').where('File.id', '=', fileId).executeTakeFirst();
+        return this._db
+            .selectFrom('File')
+            .select('File.s3Key')
+            .where('File.id', '=', fileId)
+            .executeTakeFirst();
     }
 
     async deleteFile(params: { fileId: string, ownerId: string }) {
         const { fileId, ownerId } = params;
 
-        return this._db.deleteFrom('File').where(eb => eb.and({ id: fileId, ownerId })).returningAll().executeTakeFirst();
+        return this._db
+            .deleteFrom('File')
+            .where(eb => eb.and({ id: fileId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
     }
 }

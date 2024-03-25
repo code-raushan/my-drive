@@ -8,7 +8,8 @@ import awsUtil from "../utils/aws.util";
 import logger from '../utils/logger';
 export interface IUploadFileParams {
     userId: string,
-    file: Express.Multer.File
+    file: Express.Multer.File,
+    folderId?: string
 }
 
 class FileService {
@@ -19,7 +20,7 @@ class FileService {
 
     async uploadFile(params: IUploadFileParams) {
         const s3Client = await awsUtil.s3Client();
-        const { file, userId } = params;
+        const { file, userId, folderId } = params;
         const fileId = Date.now();
         const p = file.originalname.split('.');
         const ext = p[p.length - 1];
@@ -92,6 +93,7 @@ class FileService {
         const fileInfo = await this._fileRepository.createFile({
             fileName: file.originalname,
             ownerId: userId,
+            folderId,
             s3Key: Key,
             size: file.size.toString()
         });
@@ -113,6 +115,15 @@ class FileService {
         if (!files) throw new BadRequestError('Files not found');
 
         return files;
+    }
+
+    async listFilesOfFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId });
+        if (!filesList) throw new BadRequestError('No files inside folder');
+
+        return filesList;
     }
 
     async deleteFile(params: { ownerId: string, fileId: string }) {
