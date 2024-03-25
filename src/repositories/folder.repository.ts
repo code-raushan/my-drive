@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { db } from "../db";
-class FolderRepository {
+export class FolderRepository {
     private _db = db;
 
     async createFolder(params: { ownerId: string, folderName: string }) {
