@@ -36,7 +36,7 @@ model Folder {
   owner User @relation(fields: [ownerId], references: [id])
   ownerId String
   createdAt DateTime
-  updateAt DateTime
+  updatedAt DateTime
 }
 
 model File {

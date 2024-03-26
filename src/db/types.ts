@@ -20,7 +20,7 @@ export type Folder = {
     parentFolderId: string | null;
     ownerId: string;
     createdAt: Timestamp;
-    updateAt: Timestamp;
+    updatedAt: Timestamp;
 };
 export type User = {
     id: string;

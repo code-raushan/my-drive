@@ -15,13 +15,8 @@ class AuthService {
 
   async sendOtp(phoneNumber: string) {
     try {
-      // Check if the user exists in Cognito
+      // check if user exists in cognito user pool
       await this.checkUserExistenceInCognito(phoneNumber);
-
-      // If user doesn't exist, create them in Cognito and the database
-      if (!(await this.userRepository.checkIfUserAlreadyExists(phoneNumber))) {
-        await this.createUserInCognitoAndDatabase(phoneNumber);
-      }
 
       // Initiate custom authentication flow to send OTP
       const params: InitiateAuthCommandInput = {
@@ -36,7 +31,7 @@ class AuthService {
       const response = await cognitoClient.send(input);
       return response;
     } catch (error) {
-      console.error("Error in sendOtp:", error);
+      console.error("Error in send otp function:", error);
       throw error;
     }
   }
@@ -64,13 +59,33 @@ class AuthService {
 
   private async checkUserExistenceInCognito(phoneNumber: string) {
     try {
-      await cognitoClient.adminGetUser({
+      const { Username } = await cognitoClient.adminGetUser({
         UserPoolId: this.userPoolId,
         Username: phoneNumber,
       });
+      if (!(await this.userRepository.checkIfUserAlreadyExists(phoneNumber))) {
+        const user = await this.userRepository.create(phoneNumber);
+        if (!user) throw new BadRequestError('Error creating user in database');
+
+        await cognitoClient.adminUpdateUserAttributes(
+          {
+            UserAttributes: [
+              {
+                Name: "custom:userId",
+                Value: user.id,
+              }
+            ],
+            UserPoolId: this.userPoolId,
+            Username: phoneNumber,
+          }
+        )
+      }
+      return Username;
     } catch (error: any) {
-      if (error.__type !== "UserNotFoundException") {
-        // If the error is not UserNotFoundException, rethrow it
+      if (error.__type === "UserNotFoundException") {
+        await this.createUserInCognitoAndDatabase(phoneNumber);
+      }
+      else {
         throw error;
       }
     }
@@ -78,8 +93,12 @@ class AuthService {
 
   private async createUserInCognitoAndDatabase(phoneNumber: string) {
     try {
+      let user = await this.userRepository.checkIfUserAlreadyExists(phoneNumber);
       // Create the user in the database
-      const user = await this.userRepository.create(phoneNumber);
+      if (!user) {
+        user = await this.userRepository.create(phoneNumber);
+      }
+
       if (!user) throw new BadRequestError('Error creating user');
 
       // Create the user in Cognito
@@ -100,7 +119,7 @@ class AuthService {
             Value: user.id,
           }
         ],
-        TemporaryPassword: config.TEMPORARY_COGNITO_USER_PASSSWORD, // Consider using a secure, random password
+        TemporaryPassword: config.TEMPORARY_COGNITO_USER_PASSSWORD,
         MessageAction: "SUPPRESS",
       });
     } catch (error) {

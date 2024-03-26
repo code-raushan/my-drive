@@ -15,6 +15,15 @@ class FolderService {
         return folder;
     }
 
+    async createSubFolder(params: { ownerId: string, parentFolderId: string, folderName: string }) {
+        const { folderName, ownerId, parentFolderId } = params;
+
+        const subFolder = await this._folderRepository.createSubFolder({ ownerId, parentFolderId, folderName });
+        if (!subFolder) throw new BadRequestError('Failed to create subfolder');
+
+        return subFolder;
+    }
+
     async listSubFolders(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 
@@ -34,6 +43,10 @@ class FolderService {
     async deleteFolder(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 
+        // TODO
+        // S3 files deletion of the folder
+
+        // DB Record Deletion
         const deletedFolder = await this._folderRepository.deleteFolder({ ownerId, folderId });
         if (!deletedFolder) throw new BadRequestError('Failed to delete the folder');
 
@@ -44,7 +57,7 @@ class FolderService {
         const { ownerId, folderId, newFolderName } = params;
 
         const updatedFolder = await this._folderRepository.updateFolder({ ownerId, folderId, newFolderName });
-        if (Number(updatedFolder.numUpdatedRows) === 0) throw new BadRequestError('Failed to update the folder name');
+        if (!updatedFolder) throw new BadRequestError('Failed to update the folder name');
 
         return updatedFolder;
     }

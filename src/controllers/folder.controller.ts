@@ -10,6 +10,16 @@ export const createFolder = async (req: Request, res: Response, next: NextFuncti
     next(response);
 }
 
+export const createSubFolder = async (req: Request, res: Response, next: NextFunction) => {
+    const ownerId = '97e3c12a-e0f0-4195-b0bc-cc6c3e9ab632' || req.user.id;
+    const parentFolderId = req.params.parentFolderId;
+    const folderName = req.body.folderName as string;
+
+    const response = await folderService.createSubFolder({ ownerId, parentFolderId, folderName });
+
+    next(response);
+}
+
 export const listSubFolders = async (req: Request, res: Response, next: NextFunction) => {
     const ownerId = '97e3c12a-e0f0-4195-b0bc-cc6c3e9ab632' || req.user.id;
     const folderId = req.params.folderId;

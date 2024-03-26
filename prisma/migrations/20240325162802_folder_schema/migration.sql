@@ -8,7 +8,7 @@ CREATE TABLE "Folder" (
     "parentFolderId" TEXT,
     "ownerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL,
-    "updateAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Folder_pkey" PRIMARY KEY ("id")
 );

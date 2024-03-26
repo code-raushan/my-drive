@@ -13,7 +13,24 @@ export class FolderRepository {
                 ownerId,
                 folderName,
                 createdAt: new Date(),
-                updateAt: new Date()
+                updatedAt: new Date()
+            })
+            .returningAll()
+            .executeTakeFirst();
+    }
+
+    async createSubFolder(params: { ownerId: string, parentFolderId: string, folderName: string }) {
+        const { ownerId, parentFolderId, folderName } = params;
+
+        return this._db
+            .insertInto('Folder')
+            .values({
+                id: uuid(),
+                ownerId,
+                parentFolderId,
+                folderName,
+                createdAt: new Date(),
+                updatedAt: new Date()
             })
             .returningAll()
             .executeTakeFirst();
@@ -52,8 +69,9 @@ export class FolderRepository {
 
         return this._db
             .updateTable('Folder')
-            .set({ folderName: newFolderName })
+            .set({ folderName: newFolderName, updatedAt: new Date() })
             .where((eb) => eb.and({ id: folderId, ownerId }))
+            .returningAll()
             .executeTakeFirst()
     }
 }

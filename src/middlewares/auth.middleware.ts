@@ -21,6 +21,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
     req.user = {
       id: decoded['custom:userId']
     };
+
     next();
   } catch (error) {
     console.error('Error in isLoggedIn:', error);
