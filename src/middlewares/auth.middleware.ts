@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import jwskClient from 'jwks-rsa';
 import config from '../config';
+import logger from '../utils/logger';
 
 const client = jwskClient({
   jwksUri: config.COGNITO_TOKEN_SIGNING_URL
@@ -24,7 +25,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (error) {
-    console.error('Error in isLoggedIn:', error);
+    logger.error(`Error in isLoggedIn - ${error}`);
     return res.status(401).json({ message: 'Unauthorized' });
   }
 };

@@ -3,6 +3,7 @@ import config from "../config";
 import { BadRequestError } from "../errors/bad-request.error";
 import { UserRepository } from "../repositories/user.repository";
 import cognitoClient from "../utils/cognito.util";
+import logger from "../utils/logger";
 
 class AuthService {
   private userPoolId: string;
@@ -31,7 +32,7 @@ class AuthService {
       const response = await cognitoClient.send(input);
       return response;
     } catch (error) {
-      console.error("Error in send otp function:", error);
+      logger.error(`Error in send otp function - ${error}`);
       throw error;
     }
   }
@@ -52,7 +53,7 @@ class AuthService {
       const response = await cognitoClient.send(input);
       return response;
     } catch (error) {
-      console.error("Error verifying OTP:", error);
+      logger.error(`Error verifying OTP - ${error}`);
       throw error;
     }
   }

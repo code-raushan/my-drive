@@ -35,9 +35,6 @@ export class FileRepository {
     async getFile(params: { fileId: string, ownerId: string }) {
         const { fileId, ownerId } = params;
 
-        console.log('in repository logic');
-        console.log({ fileId, ownerId })
-
         // return this._db.selectFrom('File').selectAll().where((eb) =>
         //     eb.and([
         //         eb('File.id', '=', String(fileId)),
