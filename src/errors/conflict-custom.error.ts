@@ -1,15 +1,15 @@
-import { CustomError } from './custom.error';
+import { CustomError } from "./custom.error";
 
 export class ConflictErrorJSON extends CustomError {
   statusCode = 401;
 
   constructor() {
-    super('Not Authorized');
+    super("Not Authorized");
 
     Object.setPrototypeOf(this, ConflictErrorJSON.prototype);
   }
 
   serializeErrors() {
-    return [{ message: 'Not authorized' }];
+    return [{ message: "Not authorized" }];
   }
 }

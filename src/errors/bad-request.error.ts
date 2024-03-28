@@ -1,12 +1,12 @@
-import { CustomError } from './custom.error';
+import { CustomError } from "./custom.error";
 
 export class BadRequestError extends CustomError {
   statusCode = 400;
 
-  reason = 'Bad Request';
+  reason = "Bad Request";
 
   constructor(message?: string) {
-    super(message || 'Bad Request');
+    super(message || "Bad Request");
     if (message) {
       this.reason = message;
     }

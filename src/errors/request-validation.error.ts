@@ -1,12 +1,12 @@
-import { ValidationError } from 'express-validator';
-import { CustomError } from './custom.error';
+import { ValidationError } from "express-validator";
+import { CustomError } from "./custom.error";
 
 export class RequestValidationError extends CustomError {
   statusCode = 400;
 
   // eslint-disable-next-line no-unused-vars
   constructor(public errors: ValidationError[]) {
-    super('Invalid request parameters');
+    super("Invalid request parameters");
     Object.setPrototypeOf(this, RequestValidationError.prototype);
   }
 

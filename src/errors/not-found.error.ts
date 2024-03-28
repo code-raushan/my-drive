@@ -1,12 +1,12 @@
-import { CustomError } from './custom.error';
+import { CustomError } from "./custom.error";
 
 export class NotFoundError extends CustomError {
   statusCode = 404;
 
-  reason = 'Not Found';
+  reason = "Not Found";
 
   constructor(message?: string) {
-    super(message || 'Not Found');
+    super(message || "Not Found");
     if (message) this.reason = message;
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }

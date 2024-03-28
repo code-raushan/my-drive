@@ -1,12 +1,12 @@
-import { CustomError } from './custom.error';
+import { CustomError } from "./custom.error";
 
 export class UnauthorizedError extends CustomError {
   statusCode = 401;
 
-  reason = 'Not Authorized';
+  reason = "Not Authorized";
 
   constructor(message?: string) {
-    super(message || 'Not Authorized');
+    super(message || "Not Authorized");
     if (message) {
       this.reason = message;
     }
@@ -15,6 +15,6 @@ export class UnauthorizedError extends CustomError {
 
 
   serializeErrors() {
-    return [{ message: 'Not authorized' }];
+    return [{ message: "Not authorized" }];
   }
 }
