@@ -1,5 +1,5 @@
-import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
-import config from '../config';
+import { CognitoIdentityProvider } from "@aws-sdk/client-cognito-identity-provider";
+import config from "../config";
 
 const cognitoClient = new CognitoIdentityProvider({
   region: config.AWS_REGION,

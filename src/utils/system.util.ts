@@ -1,3 +1,3 @@
-import ip from 'ip';
+import ip from "ip";
 
 export const getLocalIP = () => ip.address();

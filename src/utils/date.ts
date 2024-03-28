@@ -1,10 +1,10 @@
-import moment from 'moment';
+import moment from "moment";
 
 export function getDateAsString(): string {
-  return moment().format('Do MMMM YYYY');
+  return moment().format("Do MMMM YYYY");
 }
 export function convertDateAsString(date: string): string {
-  return moment(date).format('Do MMMM YYYY');
+  return moment(date).format("Do MMMM YYYY");
 }
 
 export function isCurrentDateBeforeDate(givenDate: string): boolean {
@@ -26,16 +26,16 @@ export function getDate(defaultDate?: string): string {
 
   let updatedMonth = month;
   if (month.length == 1) {
-    updatedMonth = '0';
+    updatedMonth = "0";
     updatedMonth += month;
   }
 
   let updatedDate = date;
   if (date.length == 1) {
-    updatedDate = '0';
+    updatedDate = "0";
     updatedDate += date;
   }
-  return year + '-' + updatedMonth + '-' + updatedDate;
+  return year + "-" + updatedMonth + "-" + updatedDate;
 }
 
 export function getDateInDDMMYYYY(): string {
@@ -45,8 +45,8 @@ export function getDateInDDMMYYYY(): string {
   const dd = today.getDate();
   let date = dd.toString();
   let month = mm.toString();
-  if (dd < 10) date = '0' + dd;
-  if (mm < 10) month = '0' + mm;
-  const formattedToday = date + '/' + month + '/' + yyyy;
+  if (dd < 10) date = "0" + dd;
+  if (mm < 10) month = "0" + mm;
+  const formattedToday = date + "/" + month + "/" + yyyy;
   return formattedToday;
 }

@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid } from "uuid";
 import { db } from "../db";
 
 export interface ICreateFileParams {
@@ -17,7 +17,7 @@ export class FileRepository {
         const { fileName, ownerId, s3Key, size, folderId } = params;
 
         return this._db
-            .insertInto('File')
+            .insertInto("File")
             .values({
                 id: uuid(),
                 fileName,
@@ -43,7 +43,7 @@ export class FileRepository {
         // ).executeTakeFirst();
 
         return this._db
-            .selectFrom('File')
+            .selectFrom("File")
             .selectAll()
             .where((eb) => eb.and({ id: fileId, ownerId }))
             .executeTakeFirst();
@@ -51,7 +51,7 @@ export class FileRepository {
 
     async getAllFiles(ownerId: string) {
         return this._db
-            .selectFrom('File')
+            .selectFrom("File")
             .selectAll()
             .where("File.ownerId", "=", ownerId)
             .execute();
@@ -61,7 +61,7 @@ export class FileRepository {
         const { ownerId, folderId } = params;
 
         return this._db
-            .selectFrom('File')
+            .selectFrom("File")
             .selectAll()
             .where((eb) => eb.and({ ownerId, folderId }))
             .execute();
@@ -69,9 +69,9 @@ export class FileRepository {
 
     async getS3Key(fileId: string) {
         return this._db
-            .selectFrom('File')
-            .select('File.s3Key')
-            .where('File.id', '=', fileId)
+            .selectFrom("File")
+            .select("File.s3Key")
+            .where("File.id", "=", fileId)
             .executeTakeFirst();
     }
 
@@ -79,7 +79,7 @@ export class FileRepository {
         const { fileId, ownerId } = params;
 
         return this._db
-            .deleteFrom('File')
+            .deleteFrom("File")
             .where(eb => eb.and({ id: fileId, ownerId }))
             .returningAll()
             .executeTakeFirst();

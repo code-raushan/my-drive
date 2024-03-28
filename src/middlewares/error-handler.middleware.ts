@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
-import { NextFunction, Request } from 'express';
-import { CustomError } from '../errors/custom.error';
-import { ResponseType } from '../types/response.type';
-import logger from '../utils/logger';
-import { customAlphabet } from 'nanoid';
+import { NextFunction, Request } from "express";
+import { customAlphabet } from "nanoid";
+import { CustomError } from "../errors/custom.error";
+import { ResponseType } from "../types/response.type";
+import logger from "../utils/logger";
 
-const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 18);
+const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 18);
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-explicit-any
 export const globalHandler = (data: any, req: Request, res: ResponseType, next: NextFunction) => {
@@ -43,12 +43,12 @@ export const globalHandler = (data: any, req: Request, res: ResponseType, next: 
 
   if (data) {
     const msg = data.msg;
-    if (data['msg']) {
-      delete data['msg'];
+    if (data["msg"]) {
+      delete data["msg"];
     }
     const statusCode = data.statusCode || 200;
-    if (data['statusCode']) {
-      delete data['statusCode'];
+    if (data["statusCode"]) {
+      delete data["statusCode"];
     }
     return res.status(statusCode).send({
       data,

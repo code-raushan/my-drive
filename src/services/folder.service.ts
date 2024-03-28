@@ -10,7 +10,7 @@ class FolderService {
         const { ownerId, folderName } = params;
 
         const folder = await this._folderRepository.createFolder({ ownerId, folderName });
-        if (!folder) throw new BadRequestError('Failed to create folder');
+        if (!folder) throw new BadRequestError("Failed to create folder");
 
         return folder;
     }
@@ -19,7 +19,7 @@ class FolderService {
         const { folderName, ownerId, parentFolderId } = params;
 
         const subFolder = await this._folderRepository.createSubFolder({ ownerId, parentFolderId, folderName });
-        if (!subFolder) throw new BadRequestError('Failed to create subfolder');
+        if (!subFolder) throw new BadRequestError("Failed to create subfolder");
 
         return subFolder;
     }
@@ -28,14 +28,14 @@ class FolderService {
         const { ownerId, folderId } = params;
 
         const list = await this._folderRepository.listSubFolders({ ownerId, folderId });
-        if (!list || list.length === 0) throw new BadRequestError('Failed to list the subfolders or no subfolder exists');
+        if (!list || list.length === 0) throw new BadRequestError("Failed to list the subfolders or no subfolder exists");
 
         return list;
     }
 
     async listAllFolders(ownerId: string) {
         const foldersList = await this._folderRepository.listAllFolders(ownerId);
-        if (!foldersList || foldersList.length === 0) throw new BadRequestError('Failed to list all folders or no folder exists');
+        if (!foldersList || foldersList.length === 0) throw new BadRequestError("Failed to list all folders or no folder exists");
 
         return foldersList;
     }
@@ -48,7 +48,7 @@ class FolderService {
 
         // DB Record Deletion
         const deletedFolder = await this._folderRepository.deleteFolder({ ownerId, folderId });
-        if (!deletedFolder) throw new BadRequestError('Failed to delete the folder');
+        if (!deletedFolder) throw new BadRequestError("Failed to delete the folder");
 
         return deletedFolder;
     }
@@ -57,11 +57,11 @@ class FolderService {
         const { ownerId, folderId, newFolderName } = params;
 
         const updatedFolder = await this._folderRepository.updateFolder({ ownerId, folderId, newFolderName });
-        if (!updatedFolder) throw new BadRequestError('Failed to update the folder name');
+        if (!updatedFolder) throw new BadRequestError("Failed to update the folder name");
 
         return updatedFolder;
     }
-};
+}
 
 export default new FolderService(new FolderRepository());
 

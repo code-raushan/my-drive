@@ -1,12 +1,12 @@
-import { Request } from 'express-validator/src/base';
-import developmentLogger from './development';
-import cloudwatchLogger from './cloudwatch';
-import config from '../../config';
+import { Request } from "express-validator/src/base";
+import config from "../../config";
+import cloudwatchLogger from "./cloudwatch";
+import developmentLogger from "./development";
 
 export const getLogDataFromReqObject = (req: Request): string => {
   try {
-    if (!req) return '(request object data Not Found)';
-    const ip = req.headers?.['x-forwarded-for'] || req.ip || req.socket['remoteAddress'];
+    if (!req) return "(request object data Not Found)";
+    const ip = req.headers?.["x-forwarded-for"] || req.ip || req.socket["remoteAddress"];
     const userId = req.user?._id;
     const path = req.path;
     const params = JSON.stringify(req.params);
@@ -18,13 +18,13 @@ export const getLogDataFromReqObject = (req: Request): string => {
     delete body?.token; //sensitive data which should not be logged
     delete body?.penpencilToken; //sensitive data which should not be logged
     delete body?.authProviderToken; //sensitive data which should not be logged
-    delete body['g-recaptcha-response']; //not needed
+    delete body["g-recaptcha-response"]; //not needed
     return `IP - ${ip}, UserId - ${userId}, Path - ${path}, Body - ${JSON.stringify(body)}, Params - ${params}, Query - ${query}`;
   } catch (error) {
     logger.error(`getLogDataFromReqObject function error - ${error}`);
-    return '(request object data Not Found)';
+    return "(request object data Not Found)";
   }
 };
 
-const logger = ['development', 'staging', 'production'].includes(config.NODE_ENV) ? cloudwatchLogger : developmentLogger;
+const logger = ["development", "staging", "production"].includes(config.NODE_ENV) ? cloudwatchLogger : developmentLogger;
 export default logger;

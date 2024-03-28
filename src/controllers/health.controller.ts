@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
-import os from 'os';
-import config from '../config';
+import { NextFunction, Request, Response } from "express";
+import os from "os";
+import config from "../config";
 //@ts-ignore
-import { default as pjson } from '../../package.json';
-import { NotFoundError } from '../errors/not-found.error';
+import { default as pjson } from "../../package.json";
+import { NotFoundError } from "../errors/not-found.error";
 
 const instanceRandomID = Math.random().toString();
 
 export const notFound = () => {
-  throw new NotFoundError('Route not found');
+  throw new NotFoundError("Route not found");
 };
 
 export const helloWorld = (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +17,7 @@ export const helloWorld = (req: Request, res: Response, next: NextFunction) => {
     all = { ...all, totalmem: os.totalmem() / 1000000000, freemem: os.freemem() / 1000000000 };
   }
   next({
-    message: 'Hello from Your-Own-Drive-System',
+    message: "Hello from Your-Own-Drive-System",
     env: config.NODE_ENV,
     instance: instanceRandomID,
     version: pjson.version,
@@ -32,7 +32,7 @@ export const health = async (req: Request, res: Response, next: NextFunction) =>
   // await redisClient.del(key);
   next({
     // redis: cached,
-    status: 'working'
+    status: "working"
   });
 };
 

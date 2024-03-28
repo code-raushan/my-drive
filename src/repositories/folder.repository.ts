@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid } from "uuid";
 import { db } from "../db";
 export class FolderRepository {
     private _db = db;
@@ -7,7 +7,7 @@ export class FolderRepository {
         const { ownerId, folderName } = params;
 
         return this._db
-            .insertInto('Folder')
+            .insertInto("Folder")
             .values({
                 id: uuid(),
                 ownerId,
@@ -23,7 +23,7 @@ export class FolderRepository {
         const { ownerId, parentFolderId, folderName } = params;
 
         return this._db
-            .insertInto('Folder')
+            .insertInto("Folder")
             .values({
                 id: uuid(),
                 ownerId,
@@ -40,38 +40,38 @@ export class FolderRepository {
         const { ownerId, folderId } = params;
 
         return this._db
-            .selectFrom('Folder')
+            .selectFrom("Folder")
             .selectAll()
             .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId }))
-            .execute()
+            .execute();
     }
 
     async listAllFolders(ownerId: string) {
         return this._db
-            .selectFrom('Folder')
+            .selectFrom("Folder")
             .selectAll()
-            .where('Folder.ownerId', '=', ownerId)
-            .execute()
+            .where("Folder.ownerId", "=", ownerId)
+            .execute();
     }
 
     async deleteFolder(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 
         return this._db
-            .deleteFrom('Folder')
+            .deleteFrom("Folder")
             .where((eb) => eb.and({ id: folderId, ownerId }))
             .returningAll()
-            .executeTakeFirst()
+            .executeTakeFirst();
     }
 
     async updateFolder(params: { ownerId: string, folderId: string, newFolderName: string }) {
         const { ownerId, folderId, newFolderName } = params;
 
         return this._db
-            .updateTable('Folder')
+            .updateTable("Folder")
             .set({ folderName: newFolderName, updatedAt: new Date() })
             .where((eb) => eb.and({ id: folderId, ownerId }))
             .returningAll()
-            .executeTakeFirst()
+            .executeTakeFirst();
     }
 }

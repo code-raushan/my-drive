@@ -1,4 +1,4 @@
-import winston, { format } from 'winston';
+import winston, { format } from "winston";
 const { combine, timestamp, printf } = format;
 
 const myFormat = printf(({ level, message, timestamp }) => {
@@ -6,15 +6,15 @@ const myFormat = printf(({ level, message, timestamp }) => {
 });
 
 const developmentLogger = winston.createLogger({
-  level: 'debug',
+  level: "debug",
   format: combine(
     format.colorize(),
-    timestamp({ format: 'HH:mm:ss' }),
+    timestamp({ format: "HH:mm:ss" }),
     myFormat
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'error.log' }),
+    new winston.transports.File({ filename: "error.log" }),
   ],
 });
 

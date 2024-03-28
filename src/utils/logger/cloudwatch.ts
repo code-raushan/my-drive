@@ -1,16 +1,16 @@
-import winston, { format } from 'winston';
+import winston, { format } from "winston";
 const { combine, timestamp, printf } = format;
 // @ts-ignore
-import CloudWatchTransport from 'winston-aws-cloudwatch';
-import { getDateAsString } from '../date';
-import config from '../../config';
+import CloudWatchTransport from "winston-aws-cloudwatch";
+import config from "../../config";
+import { getDateAsString } from "../date";
 
 const myFormat = printf(({ level, message, timestamp }) => {
   return `${level} ${timestamp} : ${message}`;
 });
 
 const cloudwatchLogger = winston.createLogger({
-  level: 'info',
+  level: "info",
   format: combine(
     timestamp(),
     myFormat

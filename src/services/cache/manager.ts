@@ -1,5 +1,5 @@
-import redisClient from '.';
-import config from '../../config';
+import redisClient from ".";
+import config from "../../config";
 
 // const getCache = async (key: string) => {
 //   await redisClient.get(key);
@@ -22,7 +22,7 @@ const setNxInRedis = async (key: string, value: any) => {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 function CacheManager<T, J = unknown>(prefix: string, duration: number) { // duration in seconds
   const generateKey = (prefix: string, values: T) => {
-    return `${config.SERVER_NAME}_${config.NODE_ENV}_${prefix}_${Object.values(values as unknown as Record<string, string>).sort().join('_')}`;
+    return `${config.SERVER_NAME}_${config.NODE_ENV}_${prefix}_${Object.values(values as unknown as Record<string, string>).sort().join("_")}`;
   };
   return {
     get: async (values: T): Promise<J> => {
@@ -32,7 +32,7 @@ function CacheManager<T, J = unknown>(prefix: string, duration: number) { // dur
     },
     set: async (keys: T, data: J) => {
       const key = generateKey(prefix, keys);
-      await redisClient.setEx(key, duration, typeof data == 'string' ? data : JSON.stringify(data));
+      await redisClient.setEx(key, duration, typeof data == "string" ? data : JSON.stringify(data));
     },
     remove: async (keys: T) => {
       const key = generateKey(prefix, keys);

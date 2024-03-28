@@ -31,7 +31,7 @@ app.use(mongoSanitize());
 
 app.use(rootRouter);
 
-app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.use("*", asyncHandler(notFound));
 
