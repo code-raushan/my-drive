@@ -1,8 +1,10 @@
 import { BadRequestError } from "../errors/bad-request.error";
+import { FileRepository } from "../repositories/file.repository";
 import { FolderRepository } from "../repositories/folder.repository";
+import fileService from "./file.service";
 
 class FolderService {
-    constructor(private readonly _folderRepository: FolderRepository) {
+    constructor(private readonly _folderRepository: FolderRepository, private readonly _fileRepository: FileRepository) {
 
     }
 
@@ -46,6 +48,40 @@ class FolderService {
         // TODO
         // S3 files deletion of the folder
 
+        // list all files in the folder
+
+        const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId });
+        type filesListType = typeof filesList;
+
+        const deleteFilesUtility = async (filesList: filesListType) => {
+            if (filesList.length > 0) {
+                const fileDeletionPromises = [];
+
+                for (const file of filesList) {
+                    fileDeletionPromises.push(fileService.deleteFile({ ownerId, fileId: file.id }));
+                }
+                return await Promise.all(fileDeletionPromises).catch((err) => {
+                    throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+                });
+            }
+        };
+
+        await deleteFilesUtility(filesList).catch((err) => {
+            throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+        });
+
+        // getting the list of sub folders in the folder
+        const subFoldersList = await this._folderRepository.listSubFolders({ ownerId, folderId });
+        if (subFoldersList.length > 0) {
+            for (const subFolder of subFoldersList) {
+                const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId: subFolder.id });
+                await deleteFilesUtility(filesList).catch((err) => {
+                    throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+                });
+
+            }
+        }
+
         // DB Record Deletion
         const deletedFolder = await this._folderRepository.deleteFolder({ ownerId, folderId });
         if (!deletedFolder) throw new BadRequestError("Failed to delete the folder");
@@ -63,5 +99,5 @@ class FolderService {
     }
 }
 
-export default new FolderService(new FolderRepository());
+export default new FolderService(new FolderRepository(), new FileRepository());
 
