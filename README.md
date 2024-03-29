@@ -13,3 +13,4 @@
 - AWS SNS for OTP messages
 - Redis for caching
 - Winston for logging
+- EsLint for TypeScript linting
