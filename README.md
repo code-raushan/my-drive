@@ -14,3 +14,9 @@
 - Redis for caching
 - Winston for logging
 - EsLint for TypeScript linting
+
+#### Features
+
+- Folder based file management
+- Support for large and small file uploads
+- User managed file system
