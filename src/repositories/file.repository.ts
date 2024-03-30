@@ -2,6 +2,7 @@ import { v4 as uuid } from "uuid";
 import { db } from "../db";
 
 export interface ICreateFileParams {
+    id?: string,
     fileName: string,
     s3Key: string,
     ownerId: string,
@@ -14,12 +15,12 @@ export class FileRepository {
     private _db = db;
 
     async createFile(params: ICreateFileParams) {
-        const { fileName, ownerId, s3Key, size, folderId } = params;
+        const { id, fileName, ownerId, s3Key, size, folderId } = params;
 
-        return this._db.transaction().execute(async(trx)=>{
+        return this._db.transaction().execute(async (trx) => {
             return trx.insertInto("File")
                 .values({
-                    id: uuid(),
+                    id: id ? id : uuid(),
                     fileName,
                     ownerId,
                     s3Key,

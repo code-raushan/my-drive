@@ -2,6 +2,7 @@ import { DeleteObjectCommand, DeleteObjectCommandInput, PutObjectCommand, PutObj
 import { Upload } from "@aws-sdk/lib-storage";
 import fs from "fs";
 import config from "../config";
+import { db } from "../db";
 import { BadRequestError } from "../errors/bad-request.error";
 import { FileRepository } from "../repositories/file.repository";
 import awsUtil from "../utils/aws.util";
@@ -14,6 +15,7 @@ export interface IUploadFileParams {
 
 class FileService {
     private _Bucket: string;
+    private _db = db;
     constructor(private readonly _fileRepository: FileRepository) {
         this._Bucket = config.S3_UPLOAD_BUCKET;
     }
@@ -149,6 +151,21 @@ class FileService {
         const { s3Key } = await this._fileRepository.getS3Key(fileId) || { s3Key: "" };
         if (!s3Key) throw new BadRequestError("Failed to get storage key");
 
+
+        // delete record from database
+        let deletedFile;
+        try {
+            deletedFile = await this._db.transaction().execute(async () => {
+                const deleted = await this._fileRepository.deleteFile({ fileId, ownerId });
+                if (!deleted) throw new BadRequestError("Failed to delete file from database");
+
+                return deleted;
+            });
+        } catch (error) {
+            logger.error(error);
+            throw new BadRequestError(`failed to delete file from database - ${fileId}`);
+        }
+
         try {
             const deleteObjectParams: DeleteObjectCommandInput = {
                 Bucket: this._Bucket,
@@ -164,11 +181,15 @@ class FileService {
 
         } catch (error) {
             logger.error(error);
+
+            await this._fileRepository.createFile({
+                id: fileId,
+                ownerId,
+                fileName: deletedFile.fileName,
+                s3Key,
+            });
             throw new BadRequestError(`failed to delete file from s3 bucket - ${s3Key}`);
         }
-        // delete record from database
-        const deletedFile = await this._fileRepository.deleteFile({ fileId, ownerId });
-        if (!deletedFile) throw new BadRequestError("Failed to delete the file");
 
         return deletedFile;
     }
