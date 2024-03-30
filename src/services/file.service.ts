@@ -16,12 +16,14 @@ export interface IUploadFileParams {
 class FileService {
     private _Bucket: string;
     private _db = db;
+    private _s3Client;
     constructor(private readonly _fileRepository: FileRepository) {
         this._Bucket = config.S3_UPLOAD_BUCKET;
+        this._s3Client = awsUtil.s3Client();
     }
 
     async uploadFile(params: IUploadFileParams) {
-        const s3Client = await awsUtil.s3Client();
+        const s3Client = await this._s3Client;
         const { file, userId, folderId } = params;
         const fileId = Date.now();
         const p = file.originalname.split(".");
@@ -173,7 +175,7 @@ class FileService {
             };
 
             const deleteObjectCommand = new DeleteObjectCommand(deleteObjectParams);
-            const s3Client = await awsUtil.s3Client();
+            const s3Client = await this._s3Client;
 
             const { $metadata } = await s3Client.send(deleteObjectCommand);
             if ($metadata.httpStatusCode === 204) logger.info(`File deleted successfully - ${s3Key}`);
