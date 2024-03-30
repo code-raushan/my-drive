@@ -45,6 +45,7 @@ class FileService {
                 logger.info("Starting to upload...");
 
                 upload.on("httpUploadProgress", (progress) => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const percentage = Math.round((progress.loaded! / progress.total!) * 100);
                     logger.info(`Upload progress: ${percentage}%`);
                 });
