@@ -91,15 +91,30 @@ class FileService {
 
         }
 
-        const fileInfo = await this._fileRepository.createFile({
-            fileName: file.originalname,
-            ownerId: userId,
-            folderId,
-            s3Key: Key,
-            size: file.size.toString()
-        });
+        try {
+            const fileInfo = await this._fileRepository.createFile({
+                fileName: file.originalname,
+                ownerId: userId,
+                folderId,
+                s3Key: Key,
+                size: file.size.toString()
+            });
+            return fileInfo;
+        } catch (error) {
+            const deleteObjectParams: DeleteObjectCommandInput = {
+                Bucket: this._Bucket,
+                Key
+            };
+            try {
+                await s3Client.send(new DeleteObjectCommand(deleteObjectParams));
+            } catch (error) {
+                logger.error(`Failed to rollback uploaded files from s3 - ${error}`);
+                throw error;
+            }
+            logger.error(`failed to insert the record in the database`);
+            throw error;
+        }
 
-        return fileInfo;
     }
 
     async getFileInfo(params: { fileId: string, ownerId: string }) {
