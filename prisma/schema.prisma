@@ -52,3 +52,11 @@ model File {
   updatedAt DateTime @updatedAt
 }
 
+model UserSession {
+  id String @id 
+  phoneNumber String
+  otp String
+  session String
+  createdAt DateTime
+  updatedAt DateTime
+}

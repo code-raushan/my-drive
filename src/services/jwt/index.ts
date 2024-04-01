@@ -11,3 +11,4 @@ export const signJWT = (data: any, time: string): string => {
 export const verifyJWT = async (token: string, secret: string) => {
   return jwt.verify(token, secret);
 };
+

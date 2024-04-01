@@ -1,12 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import jwskClient from "jwks-rsa";
 import config from "../config";
 import logger from "../utils/logger";
-
-const client = jwskClient({
-  jwksUri: config.COGNITO_TOKEN_SIGNING_URL
-});
 
 const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -15,12 +10,9 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const { header } = jwt.decode(token, { complete: true }) as jwt.Jwt;
-    const key = client.getSigningKey(header.kid);
-    const signingKey = (await key).getPublicKey();
-    const decoded: jwt.JwtPayload = jwt.verify(token, signingKey, { algorithms: ["RS256"] }) as jwt.JwtPayload;
+    const decoded: jwt.JwtPayload = jwt.verify(token, config.CLIENT_JWT_SECRET) as jwt.JwtPayload;
     req.user = {
-      id: decoded["custom:userId"]
+      id: decoded["userId"]
     };
 
     next();

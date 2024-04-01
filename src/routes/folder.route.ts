@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createFolder, createSubFolder, deleteFolder, listAllFolders, listSubFolders, updateFolderName } from "../controllers/folder.controller";
-import { asyncHandler } from "../utils/asynchandler";
+import { asyncHandler } from "../utils/asynchandler.util";
 
 const folderRouter = Router();
 

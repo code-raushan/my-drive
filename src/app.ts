@@ -8,7 +8,7 @@ import xss from "xss-clean";
 import { notFound } from "./controllers/health.controller";
 import { globalHandler } from "./middlewares/error-handler.middleware";
 import rootRouter from "./routes/index.route";
-import { asyncHandler } from "./utils/asynchandler";
+import { asyncHandler } from "./utils/asynchandler.util";
 import logger from "./utils/logger";
 import { getLocalIP } from "./utils/system.util";
 

@@ -29,8 +29,17 @@ export type User = {
     email: string | null;
     phone: string;
 };
+export type UserSession = {
+    id: string;
+    phoneNumber: string;
+    otp: string;
+    session: string;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+};
 export type DB = {
     File: File;
     Folder: Folder;
     User: User;
+    UserSession: UserSession;
 };
