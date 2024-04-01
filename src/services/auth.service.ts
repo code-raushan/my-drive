@@ -1,5 +1,6 @@
-import { InitiateAuthCommand, InitiateAuthCommandInput, RespondToAuthChallengeCommand, RespondToAuthChallengeCommandInput } from "@aws-sdk/client-cognito-identity-provider";
+import { InitiateAuthCommand, InitiateAuthCommandInput } from "@aws-sdk/client-cognito-identity-provider";
 import { PublishCommand, PublishCommandInput } from "@aws-sdk/client-sns";
+import { v4 as uuid } from "uuid";
 import config from "../config";
 import { BadRequestError } from "../errors/bad-request.error";
 import { UserRepository } from "../repositories/user.repository";
@@ -44,7 +45,7 @@ class AuthService {
     try {
       const user = await this.userRepository.checkIfUserAlreadyExists(phoneNumber);
       const otp = generateOTP();
-      const session = "session";
+      const session = uuid();
       if (!user) {
         const user = await this.userRepository.create(phoneNumber);
         if (!user) throw new BadRequestError("Failed to create user");
@@ -69,10 +70,7 @@ class AuthService {
           throw new BadRequestError(`Failed to send OTP to user - ${error}`);
         });
 
-        const accessToken = signJWT({ userId: user.id, phoneNumber }, "1d");
-        const refreshToken = signJWT({ userId: user.id, phoneNumber }, "365d");
-
-        return { phoneNumber, session, accessToken, refreshToken };
+        return { phoneNumber, session };
 
       } else {
         const userSession = await this._userSessionRepository.createSession({ otp, phoneNumber, session });
@@ -95,10 +93,7 @@ class AuthService {
           throw new BadRequestError(`Failed to send OTP to user - ${error}`);
         });
 
-        const accessToken = signJWT({ userId: user.id, phoneNumber }, "1d");
-        const refreshToken = signJWT({ userId: user.id, phoneNumber }, "365d");
-
-        return { phoneNumber, session, accessToken, refreshToken };
+        return { phoneNumber, session };
       }
     } catch (error) {
       throw new BadRequestError("Failed to send the otp");
@@ -107,26 +102,38 @@ class AuthService {
 
   async verifyOtp(params: { phoneNumber: string, code: string, session: string }) {
     const { code, phoneNumber, session } = params;
-    try {
-      const cognitoClient = await awsUtil.cognitoClient();
+    // try {
+    //   const cognitoClient = await awsUtil.cognitoClient();
 
-      const params: RespondToAuthChallengeCommandInput = {
-        ChallengeName: "CUSTOM_CHALLENGE",
-        ClientId: this.clientId,
-        ChallengeResponses: {
-          USERNAME: phoneNumber,
-          ANSWER: code,
-        },
-        Session: session,
-      };
+    //   const params: RespondToAuthChallengeCommandInput = {
+    //     ChallengeName: "CUSTOM_CHALLENGE",
+    //     ClientId: this.clientId,
+    //     ChallengeResponses: {
+    //       USERNAME: phoneNumber,
+    //       ANSWER: code,
+    //     },
+    //     Session: session,
+    //   };
 
-      const input = new RespondToAuthChallengeCommand(params);
-      const response = await cognitoClient.send(input);
-      return response;
-    } catch (error) {
-      logger.error(`Error verifying OTP - ${error}`);
-      throw error;
-    }
+    //   const input = new RespondToAuthChallengeCommand(params);
+    //   const response = await cognitoClient.send(input);
+    //   return response;
+    // } catch (error) {
+    //   logger.error(`Error verifying OTP - ${error}`);
+    //   throw error;
+    // }
+    const userSession = await this._userSessionRepository.getSession({ phoneNumber, session });
+    if (!userSession) throw new BadRequestError("Session not found, login again or create an account");
+
+    if (userSession.otp !== code) throw new BadRequestError("Invalid OTP");
+
+    const user = await this.userRepository.checkIfUserAlreadyExists(phoneNumber);
+    if (!user) throw new BadRequestError("User not found");
+
+    const accessToken = signJWT({ userId: user.id, phoneNumber, createdAt: Date.now() }, "1d");
+    const refreshToken = signJWT({ userId: user.id, phoneNumber, createdAt: Date.now() }, "365d");
+
+    return { message: "OTP validated successfully", type: "Bearer", accessToken, refreshToken };
   }
 
   async refreshToken(refreshToken: string) {
