@@ -1,5 +1,5 @@
-import { InitiateAuthCommand, InitiateAuthCommandInput } from "@aws-sdk/client-cognito-identity-provider";
 import { PublishCommand, PublishCommandInput } from "@aws-sdk/client-sns";
+import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
 import config from "../config";
 import { BadRequestError } from "../errors/bad-request.error";
@@ -8,7 +8,7 @@ import { UserSessionRepository } from "../repositories/user_session.repository";
 import awsUtil from "../utils/aws.util";
 import { generateOTP } from "../utils/generateOTP.util";
 import logger from "../utils/logger";
-import { signJWT } from "./jwt";
+import { signJWT, verifyJWT } from "./jwt";
 
 class AuthService {
   private userPoolId: string;
@@ -130,29 +130,42 @@ class AuthService {
     const user = await this.userRepository.checkIfUserAlreadyExists(phoneNumber);
     if (!user) throw new BadRequestError("User not found");
 
-    const accessToken = signJWT({ userId: user.id, phoneNumber, createdAt: Date.now() }, "1d");
-    const refreshToken = signJWT({ userId: user.id, phoneNumber, createdAt: Date.now() }, "365d");
+    const accessToken = signJWT({ userId: user.id, phoneNumber }, "1d");
+    const refreshToken = signJWT({ userId: user.id, phoneNumber }, "365d");
 
     return { message: "OTP validated successfully", type: "Bearer", accessToken, refreshToken };
   }
 
   async refreshToken(refreshToken: string) {
+    // try {
+    //   const cognitoClient = await awsUtil.cognitoClient();
+
+    //   const params: InitiateAuthCommandInput = {
+    //     AuthFlow: "REFRESH_TOKEN_AUTH",
+    //     ClientId: this.clientId,
+    //     AuthParameters: {
+    //       "REFRESH_TOKEN": refreshToken
+    //     }
+    //   };
+    //   const response = await cognitoClient.send(new InitiateAuthCommand(params));
+
+    //   return response;
+    // } catch (error) {
+    //   logger.error(`Error refreshing token - ${error}`);
+    //   throw error;
+    // }
     try {
-      const cognitoClient = await awsUtil.cognitoClient();
+      const payload = await verifyJWT(refreshToken, config.CLIENT_JWT_SECRET) as jwt.JwtPayload;
 
-      const params: InitiateAuthCommandInput = {
-        AuthFlow: "REFRESH_TOKEN_AUTH",
-        ClientId: this.clientId,
-        AuthParameters: {
-          "REFRESH_TOKEN": refreshToken
-        }
-      };
-      const response = await cognitoClient.send(new InitiateAuthCommand(params));
+      const user = await this.userRepository.checkIfUserAlreadyExists(payload["phoneNumber"]);
+      if (!user) throw new BadRequestError("User not found");
 
-      return response;
+      const accessToken = signJWT({ userId: user.id, phoneNumber: user.phone, createdAt: Date.now() }, "1d");
+
+      return { accessToken };
     } catch (error) {
-      logger.error(`Error refreshing token - ${error}`);
-      throw error;
+      logger.error(error);
+      throw new BadRequestError("Failed to refresh token");
     }
   }
 
