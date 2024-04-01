@@ -1,5 +1,6 @@
 import { CognitoIdentityProvider } from "@aws-sdk/client-cognito-identity-provider";
 import { S3Client } from "@aws-sdk/client-s3";
+import { SNSClient } from "@aws-sdk/client-sns";
 import config from "../config";
 
 class AWSUtils {
@@ -39,6 +40,19 @@ class AWSUtils {
                 secretAccessKey: this.AWS_COGNITO_SECRET_ACCESS
             }
         });
+
+        return client;
+    }
+
+    async snsClient() {
+        const client = new SNSClient({
+            region: this.AWS_REGION,
+            credentials: {
+                accessKeyId: this.S3_ACCESS_KEY_ID,
+                secretAccessKey: this.S3_SECRET_ACCESS_KEY
+            }
+        });
+
         return client;
     }
 }

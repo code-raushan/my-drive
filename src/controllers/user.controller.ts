@@ -15,7 +15,7 @@ export const verifyOTP = async (req: Request, res: Response, next: NextFunction)
   const session = req.body.session;
 
 
-  const response = await authService.verifyOtp(phoneNumber, code, session);
+  const response = await authService.verifyOtp({ phoneNumber, code, session });
 
   next(response);
 };

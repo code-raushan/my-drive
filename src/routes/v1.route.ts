@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { health, helloWorld } from "../controllers/health.controller";
 import isLoggedIn from "../middlewares/auth.middleware";
-import { asyncHandler } from "../utils/asynchandler";
+import { asyncHandler } from "../utils/asynchandler.util";
 import authRouter from "./auth.route";
 import fileRouter from "./file.route";
 import folderRouter from "./folder.route";

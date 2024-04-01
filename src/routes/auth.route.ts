@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { refreshToken, sendOTP, verifyOTP } from "../controllers/user.controller";
-import { asyncHandler } from "../utils/asynchandler";
+import { asyncHandler } from "../utils/asynchandler.util";
 
 
 const authRouter = Router();
