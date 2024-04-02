@@ -75,6 +75,17 @@ export class FolderRepository {
             .executeTakeFirst();
     }
 
+    async restoreFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        return this._db
+            .updateTable("Folder")
+            .set({ trashed: false, updatedAt: new Date() })
+            .where((eb) => eb.and({ id: folderId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
+    }
+
     async updateFolder(params: { ownerId: string, folderId: string, newFolderName: string }) {
         const { ownerId, folderId, newFolderName } = params;
 
