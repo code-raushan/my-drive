@@ -137,6 +137,24 @@ class FileService {
         return files;
     }
 
+    async moveFileToTrash(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        const trashedFile = await this._fileRepository.trashFile({ fileId, ownerId });
+        if (!trashedFile) throw new BadRequestError("Failed to move file to trash");
+
+        return trashedFile;
+    }
+
+    async restoreFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        const restoredFile = await this._fileRepository.restoreFile({ fileId, ownerId });
+        if (!restoredFile) throw new BadRequestError("Failed to restore file");
+
+        return restoredFile;
+    }
+
     async listFilesOfFolder(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 

@@ -30,7 +30,7 @@ export class FolderRepository {
                 parentFolderId,
                 folderName,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
             })
             .returningAll()
             .executeTakeFirst();
@@ -42,7 +42,7 @@ export class FolderRepository {
         return this._db
             .selectFrom("Folder")
             .selectAll()
-            .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId }))
+            .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId, trashed: false }))
             .execute();
     }
 
@@ -50,8 +50,19 @@ export class FolderRepository {
         return this._db
             .selectFrom("Folder")
             .selectAll()
-            .where("Folder.ownerId", "=", ownerId)
+            .where(eb => eb.and({ ownerId, trashed: false }))
             .execute();
+    }
+
+    async trashFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        return this._db
+            .updateTable("Folder")
+            .set({ trashed: true, updatedAt: new Date() })
+            .where((eb) => eb.and({ id: folderId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
     }
 
     async deleteFolder(params: { ownerId: string, folderId: string }) {
@@ -59,6 +70,17 @@ export class FolderRepository {
 
         return this._db
             .deleteFrom("Folder")
+            .where((eb) => eb.and({ id: folderId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
+    }
+
+    async restoreFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        return this._db
+            .updateTable("Folder")
+            .set({ trashed: false, updatedAt: new Date() })
             .where((eb) => eb.and({ id: folderId, ownerId }))
             .returningAll()
             .executeTakeFirst();

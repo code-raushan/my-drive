@@ -55,7 +55,7 @@ export class FileRepository {
         return this._db
             .selectFrom("File")
             .selectAll()
-            .where("File.ownerId", "=", ownerId)
+            .where(eb => eb.and({ ownerId, trashed: false }))
             .execute();
     }
 
@@ -65,7 +65,7 @@ export class FileRepository {
         return this._db
             .selectFrom("File")
             .selectAll()
-            .where((eb) => eb.and({ ownerId, folderId }))
+            .where((eb) => eb.and({ ownerId, folderId, trashed: false }))
             .execute();
     }
 
@@ -82,6 +82,28 @@ export class FileRepository {
 
         return this._db
             .deleteFrom("File")
+            .where(eb => eb.and({ id: fileId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
+    }
+
+    async trashFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        return this._db
+            .updateTable("File")
+            .set({ trashed: true, updatedAt: new Date() })
+            .where(eb => eb.and({ id: fileId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
+    }
+
+    async restoreFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        return this._db
+            .updateTable("File")
+            .set({ trashed: false, updatedAt: new Date() })
             .where(eb => eb.and({ id: fileId, ownerId }))
             .returningAll()
             .executeTakeFirst();
