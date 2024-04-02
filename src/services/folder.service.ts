@@ -71,6 +71,7 @@ class FolderService {
         });
 
         // getting the list of sub folders in the folder
+        // nesting not done properly -- need to fix
         const subFoldersList = await this._folderRepository.listSubFolders({ ownerId, folderId });
         if (subFoldersList.length > 0) {
             for (const subFolder of subFoldersList) {
