@@ -42,7 +42,7 @@ export class FolderRepository {
         return this._db
             .selectFrom("Folder")
             .selectAll()
-            .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId }))
+            .where((eb) => eb.and({ parentFolderId: folderId, ownerId: ownerId, trashed: false }))
             .execute();
     }
 
@@ -50,7 +50,7 @@ export class FolderRepository {
         return this._db
             .selectFrom("Folder")
             .selectAll()
-            .where("Folder.ownerId", "=", ownerId)
+            .where(eb => eb.and({ ownerId, trashed: false }))
             .execute();
     }
 
