@@ -86,4 +86,15 @@ export class FileRepository {
             .returningAll()
             .executeTakeFirst();
     }
+
+    async trashFile(params: { fileId: string, ownerId: string }) {
+        const { fileId, ownerId } = params;
+
+        return this._db
+            .updateTable("File")
+            .set({ trashed: true, updatedAt: new Date() })
+            .where(eb => eb.and({ id: fileId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
+    }
 }

@@ -35,6 +35,7 @@ model Folder {
   files File[]
   owner User @relation(fields: [ownerId], references: [id])
   ownerId String
+  trashed Boolean @default(false)
   createdAt DateTime
   updatedAt DateTime
 }
@@ -48,6 +49,7 @@ model File {
   ownerId String
   owner User @relation(fields: [ownerId], references: [id])
   size BigInt?
+  trashed Boolean @default(false)
   createdAt DateTime
   updatedAt DateTime @updatedAt
 }

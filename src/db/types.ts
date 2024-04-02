@@ -11,6 +11,7 @@ export type File = {
     s3Key: string;
     ownerId: string;
     size: string | null;
+    trashed: Generated<boolean>;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 };
@@ -19,6 +20,7 @@ export type Folder = {
     folderName: string;
     parentFolderId: string | null;
     ownerId: string;
+    trashed: Generated<boolean>;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 };

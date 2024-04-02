@@ -30,7 +30,7 @@ export class FolderRepository {
                 parentFolderId,
                 folderName,
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
             })
             .returningAll()
             .executeTakeFirst();
@@ -52,6 +52,17 @@ export class FolderRepository {
             .selectAll()
             .where("Folder.ownerId", "=", ownerId)
             .execute();
+    }
+
+    async trashFolder(params: { ownerId: string, folderId: string }) {
+        const { ownerId, folderId } = params;
+
+        return this._db
+            .updateTable("Folder")
+            .set({ trashed: true, updatedAt: new Date() })
+            .where((eb) => eb.and({ id: folderId, ownerId }))
+            .returningAll()
+            .executeTakeFirst();
     }
 
     async deleteFolder(params: { ownerId: string, folderId: string }) {
