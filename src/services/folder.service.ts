@@ -42,53 +42,88 @@ class FolderService {
         return foldersList;
     }
 
+    // async deleteFolder(params: { ownerId: string, folderId: string }) {
+    //     const { ownerId, folderId } = params;
+
+    //     // S3 files deletion of the folder
+
+    //     // list all files in the folder
+
+    //     const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId });
+    //     type filesListType = typeof filesList;
+
+    //     const deleteFilesUtility = async (filesList: filesListType) => {
+    //         if (filesList.length > 0) {
+    //             const fileDeletionPromises = [];
+
+    //             for (const file of filesList) {
+    //                 fileDeletionPromises.push(fileService.deleteFile({ ownerId, fileId: file.id }));
+    //             }
+    //             return await Promise.all(fileDeletionPromises).catch((err) => {
+    //                 throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+    //             });
+    //         }
+    //     };
+
+    //     await deleteFilesUtility(filesList).catch((err) => {
+    //         throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+    //     });
+
+    //     // getting the list of sub folders in the folder
+    //     // nesting not done properly -- need to fix
+    //     const subFoldersList = await this._folderRepository.listSubFolders({ ownerId, folderId });
+    //     if (subFoldersList.length > 0) {
+    //         for (const subFolder of subFoldersList) {
+    //             const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId: subFolder.id });
+    //             await deleteFilesUtility(filesList).catch((err) => {
+    //                 throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+    //             });
+
+    //         }
+    //     }
+
+    //     // DB Record Deletion
+    //     const deletedFolder = await this._folderRepository.deleteFolder({ ownerId, folderId });
+    //     if (!deletedFolder) throw new BadRequestError("Failed to delete the folder");
+
+    //     return deletedFolder;
+    // }
+
     async deleteFolder(params: { ownerId: string, folderId: string }) {
         const { ownerId, folderId } = params;
 
-        // TODO
-        // S3 files deletion of the folder
+        // Recursively delete files
+        const deleteFilesRecursively = async (folderId: string) => {
+            const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId });
 
-        // list all files in the folder
-
-        const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId });
-        type filesListType = typeof filesList;
-
-        const deleteFilesUtility = async (filesList: filesListType) => {
             if (filesList.length > 0) {
-                const fileDeletionPromises = [];
-
-                for (const file of filesList) {
-                    fileDeletionPromises.push(fileService.deleteFile({ ownerId, fileId: file.id }));
-                }
-                return await Promise.all(fileDeletionPromises).catch((err) => {
-                    throw new BadRequestError(`failed to delete files in the folder - ${err}`);
+                const fileDeletionPromises = filesList.map(file => fileService.deleteFile({ ownerId, fileId: file.id }));
+                await Promise.all(fileDeletionPromises).catch((err) => {
+                    throw new BadRequestError(`Failed to delete files in the folder - ${err}`);
                 });
+            }
+
+            const subFoldersList = await this._folderRepository.listSubFolders({ ownerId, folderId });
+
+            if (subFoldersList.length > 0) {
+                // Recursively delete subfolders
+                const subFolderDeletionPromises = subFoldersList.map(subFolder => deleteFilesRecursively(subFolder.id));
+                await Promise.all(subFolderDeletionPromises);
             }
         };
 
-        await deleteFilesUtility(filesList).catch((err) => {
-            throw new BadRequestError(`failed to delete files in the folder - ${err}`);
-        });
+        // Delete files and folders recursively
+        await deleteFilesRecursively(folderId);
 
-        // getting the list of sub folders in the folder
-        // nesting not done properly -- need to fix
-        const subFoldersList = await this._folderRepository.listSubFolders({ ownerId, folderId });
-        if (subFoldersList.length > 0) {
-            for (const subFolder of subFoldersList) {
-                const filesList = await this._fileRepository.getFilesOfFolder({ ownerId, folderId: subFolder.id });
-                await deleteFilesUtility(filesList).catch((err) => {
-                    throw new BadRequestError(`failed to delete files in the folder - ${err}`);
-                });
-
-            }
-        }
-
-        // DB Record Deletion
+        // Delete the parent folder from the database
         const deletedFolder = await this._folderRepository.deleteFolder({ ownerId, folderId });
-        if (!deletedFolder) throw new BadRequestError("Failed to delete the folder");
+        if (!deletedFolder) {
+            throw new BadRequestError("Failed to delete the folder");
+        }
 
         return deletedFolder;
     }
+
 
     async updateFolderName(params: { ownerId: string, folderId: string, newFolderName: string }) {
         const { ownerId, folderId, newFolderName } = params;

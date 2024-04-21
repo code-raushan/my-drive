@@ -20,3 +20,4 @@
 - Folder based file management
 - Support for large and small file uploads
 - User managed file system
+- Trash system incorporated
