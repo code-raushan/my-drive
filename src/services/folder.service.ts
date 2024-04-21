@@ -45,7 +45,6 @@ class FolderService {
     // async deleteFolder(params: { ownerId: string, folderId: string }) {
     //     const { ownerId, folderId } = params;
 
-    //     // TODO
     //     // S3 files deletion of the folder
 
     //     // list all files in the folder
